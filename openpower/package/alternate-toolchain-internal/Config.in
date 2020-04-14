@@ -1,0 +1,15 @@
+config BR2_PACKAGE_ALTERNATE_TOOLCHAIN_INTERNAL
+	bool "alternate-toolchain-internal"
+	select BR2_PACKAGE_HAS_ALTERNATE_TOOLCHAIN
+	help
+	  Build an Alternate Toolchain to be used by certain
+	  packages versus the default buildtoot toolchain
+
+if BR2_PACKAGE_ALTERNATE_TOOLCHAIN_INTERNAL
+config BR2_PACKAGE_PROVIDES_ALTERNATE_TOOLCHAIN
+	default "alternate-toolchain-internal"
+
+source "$BR2_EXTERNAL_OP_BUILD_PATH/package/alternate-binutils/Config.in"
+source "$BR2_EXTERNAL_OP_BUILD_PATH/package/alternate-gcc/Config.in"
+
+endif

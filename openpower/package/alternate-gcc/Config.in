@@ -1,0 +1,17 @@
+config BR2_PACKAGE_ALTERNATE_GCC
+	bool "alternate-gcc"
+	default y if BR2_PACKAGE_ALTERNATE_TOOLCHAIN_INTERNAL
+
+	select BR2_PACKAGE_ALTERNATE_BINUTILS
+	help
+	  Build gcc for an Alternate Toolchain, for use in
+	  certain packages.
+
+if BR2_PACKAGE_ALTERNATE_GCC
+
+config BR2_ALTERNATE_GCC_VERSION
+	string "Alternate gcc version"
+	default "6.5.0"
+
+endif
+

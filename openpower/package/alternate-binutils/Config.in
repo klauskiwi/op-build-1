@@ -1,0 +1,16 @@
+config BR2_PACKAGE_ALTERNATE_BINUTILS
+	bool "alternate-binutils"
+	default y if BR2_PACKAGE_ALTERNATE_TOOLCHAIN_INTERNAL
+	select BR2_CPP
+	help
+	  Build Binutils for an Alternate Toolchain, for use in
+	  certain packages
+
+if BR2_PACKAGE_ALTERNATE_BINUTILS
+
+config BR2_ALTERNATE_BINUTILS_VERSION
+	string "Alternate Toolchain Binutils Version"
+	default "2.31.1"
+
+endif
+
