@@ -1,6 +1,4 @@
 #!/bin/bash
-
-set -ex
 set -eo pipefail
 
 CONTAINERS="ubuntu1804 fedora30"
