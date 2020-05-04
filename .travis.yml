@@ -1,31 +1,97 @@
-sudo: false
+language: c
+os: linux
 dist: bionic
 
 cache:
-  apt: true
+  ccache: true
+  directories:
+    - $DL_DIR
+    - $SDK_CACHE
+    - $CCACHE_DIR
 
-git:
-  depth: false
+env:
+  global:
+    - DL_DIR=$OP_BUILD_WORKSPACE/dl
+    - BR2_DL_DIR=$DL_DIR
+    - SDK_CACHE=$OP_BUILD_WORKSPACE/sdk
+    - CCACHE_DIR=$OP_BUILD_WORKSPACE/ccache
+  jobs:
+    - PLATFORMS=witherspoon
+#   - PLATFORMS=mihawk
+#   - PLATFORMS=romulus
+#   - PLATFORMS=zz
+#   - PLATFORMS=p9dsu
+#   - PLATFORMS=p8dtu
+#   - PLATFORMS=palmetto
 
-addons:
-  apt:
-    packages:
-      - libalgorithm-diff-perl
-      - graphviz
+before_install:
+  - sudo apt-get install cscope ctags libz-dev libexpat-dev
+          python language-pack-en texinfo gawk cpio xxd
+          build-essential g++ git bison flex unzip
+          libssl-dev libxml-simple-perl libxml-sax-perl libxml-parser-perl libxml2-dev libxml2-utils xsltproc
+          wget bc rsync
+          eatmydata gawk
+  - mkdir -p $DL_DIR
+  - mkdir -p $SDK_CACHE
+  - mkdir -p $CCACHE_DIR
 
-language: python
-python:
-  - "2.7"
-install:
- - "pip install -r doc/requirements.txt"
-script:
-  - bash openpower/scripts/update-defconfigs.sh
-  - cd doc/; make html
+stages:
+  - sources
+  - sdk
+  - defconfigs
 
-deploy:
-  provider: pages
-  skip-cleanup: true
-  github-token: $GITHUB_TOKEN  # Set in travis-ci.org dashboard, marked secure
-  local_dir: "doc/_build/html"
-  on:
-    branch: master
+jobs:
+  include:
+    - stage: sources
+      script:
+        - export OUTDIR=$(mktemp -d)
+        - echo ">>> Using BR2_DL_DIR='$DL_DIR'"
+        - echo ">>> BR2_DL_DIR contents:"
+        - find $BR2_DL_DIR -maxdepth 2
+        - echo ">>> Using SDK_CACHE='$SDK_CACHE'"
+        - echo ">>> SDK_CACHE contents:"
+        - find $SDK_CACHE -maxdepth 2
+        - ./op-build O=$OUTDIR "${PLATFORMS}_defconfig"
+        - ./op-build O=$OUTDIR source
+      workspaces:
+        create:
+          name: dl_dir
+          paths: $DL_DIR
+    - stage: sdk
+      script:
+        - echo ">>> Using DL_DIR='$DL_DIR'"
+        - echo ">>> DL_DIR contents:"
+        - find $DL_DIR -maxdepth 2
+        - echo ">>> Using SDK_CACHE='$SDK_CACHE'"
+        - echo ">>> SDK_CACHE contents:"
+        - find $SDK_CACHE -maxdepth 2
+        - export OUTDIR=$(mktemp -d)
+        # Due to the ammount of logs generated, we sample the output every $LOG_SAMPLING lines
+        # while outputting all lines containing >>> or + and collecting the full log under build.log
+        - ci/build-all-defconfigs.sh -o $OUTDIR -s $SDK_CACHE -p $PLATFORMS -S 2>&1
+          | tee build.log 
+          | gawk -v LOG_SAMPLING=$LOG_SAMPLING '/>>>/ || /^\+/ || NR % LOG_SAMPLING == 0'
+      workspaces:
+        use: dl_dir
+        create:
+          name: sdk_cache
+          paths: $SDK_CACHE
+    - stage: defconfigs
+      script:
+        - export OUTDIR=$(mktemp -d)
+        - echo ">>> Using DL_DIR='$DL_DIR'"
+        - echo ">>> DL_DIR contents:"
+        - find $DL_DIR -maxdepth 2
+        - echo ">>> Using SDK_CACHE='$SDK_CACHE'"
+        - echo ">>> SDK_CACHE contents:"
+        - find $SDK_CACHE -maxdepth 2
+        - ci/build-all-defconfigs.sh -o $OUTDIR -s $SDK_CACHE -p $PLATFORMS 2>&1
+          | tee build.log
+          | gawk -v LOG_SAMPLING=$LOG_SAMPLING '/>>>/ || /^\+/ || NR % LOG_SAMPLING == 0'
+      workspaces:
+        use:
+          - dl_dir
+          - sdk_cache
+
+after_failure:
+  - tail --lines=2000 build.log

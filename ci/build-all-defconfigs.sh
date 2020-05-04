@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -ex
 set -eo pipefail
 
@@ -11,7 +10,7 @@ SDK_DIR=""
 
 opt=$(getopt -o 'o:Ss:p:r' -- "$@")
 if [ $? -ne 0 ] ; then
-	echo "Invalid arguments"
+	echo ">>> Invalid arguments"
 	exit 1
 fi
 
@@ -22,25 +21,25 @@ while true; do
   case "$1" in
     '-o')
       shift
-      echo "Output directory: $1"
+      echo ">>> Output directory: $1"
       OUTDIR="$1"
       ;;
     '-S')
-      echo "Build SDK Only"
+      echo ">>> Build SDK Only"
       SDK_ONLY=1
       ;;
     '-s')
       shift
-      echo "SDK cache dir is in: $1"
+      echo ">>> SDK cache dir is in: $1"
       SDK_CACHE=$1
       ;;
     '-p')
       shift
-      echo "Platforms to build: $1"
+      echo ">>> Platforms to build: $1"
       PLATFORM_LIST="$1"
       ;;
     '-r')
-      echo "Build legal-info etc for release"
+      echo ">>> Build legal-info etc for release"
       BUILD_INFO=1
       ;;
     '--')
@@ -48,7 +47,7 @@ while true; do
       break
       ;;
     *)
-      echo "Internal error!"
+      echo ">>> Internal error!"
       exit 1
       ;;
   esac
@@ -191,7 +190,7 @@ function build_sdk
 	SDK_DIR="$2/toolchain-${HASH_VAL}"
 
 	if [ -e "$SDK_DIR" ]; then
-		echo "Acceptable SDK for $i exists in $SDK_DIR - skipping build"
+		echo ">>> Acceptable SDK for $i exists in $SDK_DIR - skipping build"
 	else
 		op-build O=$SDK_BUILD_DIR sdk
 		if [ $? -ne 0 ]; then
@@ -207,7 +206,7 @@ function build_sdk
 }
 
 if [ -z "${PLATFORM_LIST-}" ]; then
-        echo "Using all the defconfigs for all the platforms"
+        echo ">>> Using all the defconfigs for all the platforms"
         DEFCONFIGS=`(cd openpower/configs; ls -1 *_defconfig)`
 else
         IFS=', '
@@ -242,7 +241,7 @@ for i in ${DEFCONFIGS[@]}; do
 	SDK_DIR=""
 	build_sdk $i $SDK_CACHE
 	if [ $? -ne 0 ]; then
-		echo "Error building SDK"
+		echo ">>> Error building SDK"
 		exit 1
 	fi
 
@@ -286,13 +285,13 @@ for i in ${DEFCONFIGS[@]}; do
 	# The Kernel Headers requested MUST be the same as the one
 	# provided by the SDK (i.e., it's part of the hash)
 	HEADERS_VER=$(buildroot/utils/config --file $O/.config --state TOOLCHAIN_HEADERS_AT_LEAST)
-	echo "Toolchain Headers Version Requested: $HEADERS_VER"
+	echo ">>> Toolchain Headers Version Requested: $HEADERS_VER"
 	HEADERS="TOOLCHAIN_EXTERNAL_HEADERS_$(get_major_minor_release $HEADERS_VER)"
 	buildroot/utils/config --file $O/.config --enable "$HEADERS"
 
 	# Same for the GCC version
 	EXTERNAL_GCC_VER=$(buildroot/utils/config --file $O/.config --state GCC_VERSION)
-	echo "GCC Version Requested: $EXTERNAL_GCC_VER"
+	echo ">>> GCC Version Requested: $EXTERNAL_GCC_VER"
 	EXTERNAL_GCC="TOOLCHAIN_EXTERNAL_GCC_$(get_major_release $EXTERNAL_GCC_VER)"
 	buildroot/utils/config --file $O/.config --enable "$EXTERNAL_GCC"
 
@@ -311,3 +310,4 @@ for i in ${DEFCONFIGS[@]}; do
         fi
 done
 
+exit 0
