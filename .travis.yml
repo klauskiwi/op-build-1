@@ -1,5 +1,5 @@
 sudo: false
-dist: trusty
+dist: bionic
 
 cache:
   apt: true
@@ -10,7 +10,6 @@ git:
 addons:
   apt:
     packages:
-      - python-pip
       - libalgorithm-diff-perl
       - graphviz
 
