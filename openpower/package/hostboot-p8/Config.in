@@ -7,6 +7,14 @@ config BR2_PACKAGE_HOSTBOOT_P8
 
 if BR2_PACKAGE_HOSTBOOT_P8
 
+config BR2_HOSTBOOT_P8_USE_ALTERNATE_TOOLCHAIN
+        bool "Use Alternate Toolchain to build Hostboot-P8"
+        default n
+        select BR2_PACKAGE_ALTERNATE_TOOLCHAIN
+        help
+          Select to enable using an Alternate Toolchain to
+          build Hostboot-P8
+
 config BR2_HOSTBOOT_P8_CONFIG_FILE
         string "Hostboot configuration file for compilation"
         default default

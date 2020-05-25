@@ -14,4 +14,12 @@ config BR2_OCC_P8_BIN_FILENAME
         help
             String used to define name of the OCC binary image file
 
+config BR2_OCC_P8_USE_ALTERNATE_TOOLCHAIN
+        bool "Use Alternate Toolchain to build OCC for P8"
+        default n
+        select BR2_PACKAGE_ALTERNATE_TOOLCHAIN
+        help
+          Select to enable using an Alternate Toolchain to build
+          OCC for P8
+
 endif
