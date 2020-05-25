@@ -1,0 +1,19 @@
+config BR2_PACKAGE_ALTERNATE_TOOLCHAIN_EXTERNAL
+	bool "alternate-toolchain-external"
+	select BR2_PACKAGE_HAS_ALTERNATE_TOOLCHAIN
+	help
+	  Use an external Alternate Toolchain
+
+if BR2_PACKAGE_ALTERNATE_TOOLCHAIN_EXTERNAL
+config BR2_PACKAGE_PROVIDES_ALTERNATE_TOOLCHAIN
+	default "alternate-toolchain-external"
+
+config BR2_ALTERNATE_TOOLCHAIN_EXTERNAL_PATH
+	string "External Alternate Toolchain path"
+	help
+	  Pathname to where the external Alternate Toolchain
+	  is installed. The toolchain is expected to be
+	  fully contained within the
+	  "alternate-toolchain/" sub-directory
+endif
+

@@ -11,6 +11,7 @@ choice
 	  Select the type of the Alternate Toolchain to use
 
 source "$BR2_EXTERNAL_OP_BUILD_PATH/package/alternate-toolchain-internal/Config.in"
+source "$BR2_EXTERNAL_OP_BUILD_PATH/package/alternate-toolchain-external/Config.in"
 
 endchoice
 
