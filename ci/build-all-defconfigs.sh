@@ -109,11 +109,15 @@ function build_sdk
 	# consider them to make the sdk unique
 	buildroot/utils/config --file $SDK_BUILD_DIR/.config --package \
 		--enable P8_PORE_TOOLCHAIN  --enable HOST_P8_PORE_BINUTILS \
-		--enable PPE42_TOOLCHAIN --enable HOST_PPE42_GCC --enable HOST_PPE42_BINUTILS
+		--enable PPE42_TOOLCHAIN --enable HOST_PPE42_GCC --enable HOST_PPE42_BINUTILS \
+		--enable ALTERNATE_TOOLCHAIN
 
 	HASH_PROPERTIES="$HASH_PROPERTIES $(sha1sum_dir openpower/package/p8-pore-binutils/)"
 	HASH_PROPERTIES="$HASH_PROPERTIES $(sha1sum_dir openpower/package/ppe42-gcc/)"
 	HASH_PROPERTIES="$HASH_PROPERTIES $(sha1sum_dir openpower/package/ppe42-binutils/)"
+	HASH_PROPERTIES="$HASH_PROPERTIES $(sha1sum_dir openpower/package/alternate-toolchain-internal/)"
+	HASH_PROPERTIES="$HASH_PROPERTIES $(sha1sum_dir openpower/package/alternate-binutils/)"
+	HASH_PROPERTIES="$HASH_PROPERTIES $(sha1sum_dir openpower/package/alternate-gcc/)"
 
 	# As we are disabling BR2_LINUX_KERNEL, capture Kernel version if any
 	# to prevent it from defaulting to the last on olddefconfig
@@ -281,6 +285,13 @@ for i in ${DEFCONFIGS[@]}; do
 			--set-str PPE42_TOOLCHAIN_EXTERNAL_PATH $SDK_DIR/host
 	fi
 
+	# Our SDK will always have alternate-toolchain enabled, but
+	# only use it if we require it
+	ALTERNATE_REQUIRED=$(buildroot/utils/config --file $O/.config --package --state ALTERNATE_TOOLCHAIN)
+	if [ "$ALTERNATE_REQUIRED" = "y" ]; then
+		buildroot/utils/config --file $O/.config --enable PACKAGE_ALTERNATE_TOOLCHAIN_EXTERNAL \
+			--set-str ALTERNATE_TOOLCHAIN_EXTERNAL_PATH $SDK_DIR/host
+	fi
 
 
 	# The Kernel Headers requested MUST be the same as the one
